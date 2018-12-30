@@ -2,24 +2,23 @@
 
 import numpy as np
 import gym, torch
-import PolicyLearner
+import PolicyLearner, DataHandler
 
 def main():
     env = gym.make('CartPole-v0')
-    policy = PolicyLearner.PolicyLearner(PolicyLearner.Net())
+    net = PolicyLearner.Net()
+    policy = PolicyLearner.PolicyLearner(net)
+    dataHandler = DataHandler.DataHandler(policy, env)
 
-    for i in range(10):
-        observ = env.reset()
-        done = False
-        while not done:
-            if not env.render():
-                return
+    for i in range(1000):
+        continueFlag = dataHandler.render(episodes=3)
+        if not continueFlag:
+            return
 
-            input = np.asarray([observ], dtype=np.float32)
-            input = torch.from_numpy(input)
-            output = policy.forward(input)
-            action = output.numpy()[0]
-            observ, reward, done, info = env.step(action)
+        reward = dataHandler.generate(episodes=2000)
+        loss = dataHandler.train(batchSize=32)
+        dataHandler.reset()
+        print("reward:", reward, "loss:", loss.item())
 
 
 if __name__ == "__main__":
