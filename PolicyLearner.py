@@ -1,17 +1,6 @@
 
 import torch
 from torch import nn
-from torch.nn import functional as F
-
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.linear = nn.Linear(4, 2)
-
-    def forward(self, x):
-        x = self.linear(x)
-        return x
-
 
 class PolicyLearner:
     def __init__(self, net):
@@ -21,7 +10,6 @@ class PolicyLearner:
 
     def forward(self, x):
         x = self.net.forward(x)
-        x = F.softmax(x)
         distr = torch.distributions.Categorical(probs=x)
         samples = distr.sample()
         return samples
