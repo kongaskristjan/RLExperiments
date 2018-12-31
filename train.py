@@ -16,9 +16,9 @@ def main():
             return
 
         reward = dataHandler.generate(episodes=2000)
-        loss = dataHandler.train(batchSize=32)
+        dataHandler.train(batchSize=32)
         dataHandler.reset()
-        print("reward:", reward, "loss:", loss.item())
+        print("reward:", reward)
 
 
 if __name__ == "__main__":

@@ -37,13 +37,9 @@ class DataHandler:
         dataset = TensorDataset(inputs, labels, rewards)
         dataLoader = DataLoader(dataset, batch_size=batchSize, shuffle=True, num_workers=2)
 
-        runningLoss, totalSize = 0.0, 0
         for i, data in enumerate(dataLoader):
             inputSamples, labelSamples, rewardSamples = data
-            runningLoss += self.policy.learn(inputSamples, labelSamples, rewardSamples)
-            totalSize += len(inputSamples)
-
-        return runningLoss / totalSize
+            self.policy.learn(inputSamples, labelSamples, rewardSamples)
 
 
     def render(self, episodes=1):
