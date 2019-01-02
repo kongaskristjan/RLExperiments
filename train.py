@@ -2,11 +2,12 @@
 
 import numpy as np
 import gym, torch
-import Net, PolicyLearner, DataHandler
+import Net, PolicyLearner, DataHandler, Definitions
 
 def main():
-    env = gym.make('CartPole-v0')
+    env = Definitions.makeSeededEnvironment("CartPole-v0")
     net = Net.Net()
+    net = net.to(Definitions.device)
     policy = PolicyLearner.PolicyLearner(net)
     dataHandler = DataHandler.DataHandler(policy, env)
 
