@@ -14,10 +14,10 @@ class PolicyLearner:
         samples = distr.sample()
         return samples
 
-    def learn(self, inputs, labels, reward):
+    def learn(self, inputs, labels, rewards):
         self.optimizer.zero_grad()
         outputs = self.net(inputs)
-        loss = reward * self.criterion(outputs, labels)
+        loss = rewards * self.criterion(outputs, labels)
         loss = torch.sum(loss)
         loss.backward()
         self.optimizer.step()

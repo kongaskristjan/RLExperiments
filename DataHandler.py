@@ -9,10 +9,15 @@ class DataHandler:
         self.env = env
         self.reset()
 
-    def reset(self):
-        self.inputs = []
-        self.labels = []
-        self.rewards = []
+    def reset(self, keepSize = 0):
+        if 'inputs' not in dir(self):
+            self.inputs = []
+            self.labels = []
+            self.rewards = []
+        throwAway = max(0,len(self.inputs)-keepSize)
+        self.inputs = self.inputs[throwAway:]
+        self.labels = self.labels[throwAway:] 
+        self.rewards = self.rewards[throwAway:] 
 
     def generate(self, episodes):
         sumReward, n = 0.0, 0
@@ -50,11 +55,12 @@ class DataHandler:
 
         return continueFlag
 
-    def runEpisode(self, doRender=False):
+    def runEpisode(self, doRender=False, discountFactor=0.97):
         inputList, outputList = [], []
         totalReward = 0.0
         observ = self.env.reset()
         done = False
+        rewardList = []
         while not done:
             if doRender:
                 continueFlag = self.env.render()
@@ -67,9 +73,11 @@ class DataHandler:
             observ, reward, done, info = self.env.step(output)
             inputList.extend(input)
             outputList.append(output)
+            rewardList.append(reward)
             totalReward += reward
 
-        rewardList = [totalReward] * len(outputList)
+        for i in range(len(outputList)-2,-1,-1):
+            rewardList[i] += rewardList[i+1]*discountFactor
 
         if doRender:
             return True

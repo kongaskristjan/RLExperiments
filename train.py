@@ -15,10 +15,11 @@ def main():
         if not continueFlag:
             return
 
-        reward = dataHandler.generate(episodes=2000)
-        dataHandler.train(batchSize=32)
-        dataHandler.reset()
-        print("reward:", reward)
+        reward = dataHandler.generate(episodes=100)
+        dataHandler.train(batchSize=8)
+        print('trained on:',len(dataHandler.inputs))
+        dataHandler.reset(keepSize=40000)
+        print('reward:', reward)
 
 
 if __name__ == "__main__":
