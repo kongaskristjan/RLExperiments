@@ -31,7 +31,7 @@ class DataHandler:
         inputs = torch.from_numpy(np.asarray(self.inputs, dtype=np.float32))
         labels = torch.from_numpy(np.asarray(self.labels, dtype=np.int64))
         rewards = np.asarray(self.rewards, dtype=np.float32)
-        rewards = (rewards - rewards.mean()) / rewards.std()
+        rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-6)
         rewards = torch.from_numpy(rewards)
 
         dataset = TensorDataset(inputs, labels, rewards)
