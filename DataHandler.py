@@ -1,5 +1,5 @@
 
-import torch, time
+import torch, sys
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 
@@ -20,23 +20,22 @@ class DataHandler:
         self.rewards = self.rewards[throwAway:] 
 
     def generate(self, episodes):
-        sumReward, n = 0.0, 0
+        sumReward = 0.0
         for i in range(episodes):
             inputs, labels, rewards, totalReward = self.runEpisode()
             self.inputs.extend(inputs)
             self.labels.extend(labels)
             self.rewards.extend(rewards)
             sumReward += totalReward
-            n += 1
 
-        avgReward = sumReward / n
+        avgReward = sumReward / episodes
         return avgReward
 
     def train(self, batchSize):
         inputs = torch.from_numpy(np.asarray(self.inputs, dtype=np.float32))
         labels = torch.from_numpy(np.asarray(self.labels, dtype=np.int64))
         rewards = np.asarray(self.rewards, dtype=np.float32)
-        rewards = (rewards - rewards.mean()) / rewards.std()
+        rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-6)
         rewards = torch.from_numpy(rewards)
 
         dataset = TensorDataset(inputs, labels, rewards)
@@ -46,14 +45,9 @@ class DataHandler:
             inputSamples, labelSamples, rewardSamples = data
             self.policy.learn(inputSamples, labelSamples, rewardSamples)
 
-
     def render(self, episodes=1):
         for i in range(episodes):
-            continueFlag = self.runEpisode(doRender=True)
-            if not continueFlag:
-                return continueFlag
-
-        return continueFlag
+            self.runEpisode(doRender=True)
 
     def runEpisode(self, doRender=False, discountFactor=0.97):
         inputList, outputList = [], []
@@ -65,7 +59,7 @@ class DataHandler:
             if doRender:
                 continueFlag = self.env.render()
                 if not continueFlag:
-                    return continueFlag
+                    sys.exit(0)
 
             input = np.asarray([observ], dtype=np.float32)
             output = self.policy.forward(torch.from_numpy(input))
@@ -78,8 +72,4 @@ class DataHandler:
 
         for i in range(len(outputList)-2,-1,-1):
             rewardList[i] += rewardList[i+1]*discountFactor
-
-        if doRender:
-            return True
-        else:
-            return inputList, outputList, rewardList, totalReward
+        return inputList, outputList, rewardList, totalReward
