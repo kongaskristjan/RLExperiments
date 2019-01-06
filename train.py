@@ -23,20 +23,20 @@ def testGame(gameName, verbose=True):
 
     sumReward = 0.
     maxReward = -1e9
-    nIters = 10
+    nIters = 20
     for i in range(nIters):
         dataHandler.render(episodes=3)
 
-        reward = dataHandler.generate(episodes=2000)
-        dataHandler.train(batchSize=32)
-        dataHandler.reset()
-        if verbose: print(gameName, "   iteration:", str(i+1) + "/" + str(nIters), "   reward:", reward)
+        reward = dataHandler.generate(episodes=100)
+        dataHandler.reset(keepSize=40000)
+        dataHandler.train(batchSize=8)
+        if verbose: print(gameName, "   iteration:", str(i+1) + "/" + str(nIters), "   reward:", reward, "   trained on:", len(dataHandler.inputs))
         sumReward += reward
         maxReward = max(maxReward, reward)
 
     avgReward = sumReward / nIters
     if verbose:
-        print(gameName, "   Avg:", avgReward, "   Max:", maxReward)
+        print("%s   Avg: %.2f   Max: %.2f" % (gameName, avgReward, maxReward))
         print()
     env.close()
     return avgReward, maxReward

@@ -1,5 +1,5 @@
 
-import torch, sys
+import torch, sys, random
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 
@@ -9,22 +9,38 @@ class DataHandler:
         self.env = env
         self.reset()
 
-    def reset(self):
-        self.inputs = []
-        self.labels = []
-        self.rewards = []
+    def reset(self, keepSize = 0):
+        if 'inputs' not in dir(self):
+            self.inputs = []
+            self.labels = []
+            self.rewards = []
+
+        # Shuffle all lists with same order
+        if len(self.inputs) > 0:
+            sampleEfficiency = np.abs((self.rewards - np.mean(self.rewards)) / np.std(self.rewards))
+            sampleEfficiency += np.random.normal(scale=0.12, size=sampleEfficiency.shape[0])
+            indices = list(np.argsort(sampleEfficiency))
+            np.random.shuffle(indices)
+            self.inputs = [ self.inputs[i] for i in indices ]
+            self.labels = [ self.labels[i] for i in indices ]
+            self.rewards = [ self.rewards[i] for i in indices ]
+
+
+        throwAway = max(0,len(self.inputs)-keepSize)
+        self.inputs = self.inputs[throwAway:]
+        self.labels = self.labels[throwAway:] 
+        self.rewards = self.rewards[throwAway:] 
 
     def generate(self, episodes):
-        sumReward, n = 0.0, 0
+        sumReward = 0.0
         for i in range(episodes):
             inputs, labels, rewards, totalReward = self.runEpisode()
             self.inputs.extend(inputs)
             self.labels.extend(labels)
             self.rewards.extend(rewards)
             sumReward += totalReward
-            n += 1
 
-        avgReward = sumReward / n
+        avgReward = sumReward / episodes
         return avgReward
 
     def train(self, batchSize):
@@ -45,11 +61,12 @@ class DataHandler:
         for i in range(episodes):
             self.runEpisode(doRender=True)
 
-    def runEpisode(self, doRender=False):
+    def runEpisode(self, doRender=False, discountFactor=0.97):
         inputList, outputList = [], []
         totalReward = 0.0
         observ = self.env.reset()
         done = False
+        rewardList = []
         while not done:
             if doRender:
                 continueFlag = self.env.render()
@@ -62,7 +79,9 @@ class DataHandler:
             observ, reward, done, info = self.env.step(output)
             inputList.extend(input)
             outputList.append(output)
+            rewardList.append(reward)
             totalReward += reward
 
-        rewardList = [totalReward] * len(outputList)
+        for i in range(len(outputList)-2,-1,-1):
+            rewardList[i] += rewardList[i+1]*discountFactor
         return inputList, outputList, rewardList, totalReward
