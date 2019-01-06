@@ -1,5 +1,5 @@
 
-import torch, sys
+import torch, sys, random
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 
@@ -14,6 +14,18 @@ class DataHandler:
             self.inputs = []
             self.labels = []
             self.rewards = []
+
+        # Shuffle all lists with same order
+        if len(self.inputs) > 0:
+            sampleEfficiency = np.abs((self.rewards - np.mean(self.rewards)) / np.std(self.rewards))
+            sampleEfficiency += np.random.normal(scale=0.12, size=sampleEfficiency.shape[0])
+            indices = list(np.argsort(sampleEfficiency))
+            np.random.shuffle(indices)
+            self.inputs = [ self.inputs[i] for i in indices ]
+            self.labels = [ self.labels[i] for i in indices ]
+            self.rewards = [ self.rewards[i] for i in indices ]
+
+
         throwAway = max(0,len(self.inputs)-keepSize)
         self.inputs = self.inputs[throwAway:]
         self.labels = self.labels[throwAway:] 
