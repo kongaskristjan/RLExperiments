@@ -29,7 +29,7 @@ def testGame(gameName, verbose=True):
 
         confidenceMul = i
         policy.setConfidenceMul(confidenceMul)
-        for i in range(10):
+        for j in range(10):
             reward = dataHandler.generate(episodes=10)
             dataHandler.reset(keepSize=40000)
             dataHandler.train(batchSize=8, useFraction=0.1)
