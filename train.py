@@ -29,9 +29,10 @@ def testGame(gameName, verbose=True):
 
         confidenceMul = i
         policy.setConfidenceMul(confidenceMul)
-        reward = dataHandler.generate(episodes=100)
-        dataHandler.reset(keepSize=40000)
-        dataHandler.train(batchSize=8)
+        for i in range(10):
+            reward = dataHandler.generate(episodes=10)
+            dataHandler.reset(keepSize=40000)
+            dataHandler.train(batchSize=8, useFraction=0.1)
         if verbose: print(gameName, "   iteration:", str(i+1) + "/" + str(nIters), "   reward:", reward,
                           "   trained on:", len(dataHandler.inputs), "    confidence multipiler:", confidenceMul)
         sumReward += reward
