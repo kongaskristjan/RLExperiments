@@ -20,5 +20,4 @@ class Net(nn.Module):
         x = self.linear1(x)
         x = F.relu(x)
         x = self.linear2(x)
-        x = F.softmax(x)
         return x

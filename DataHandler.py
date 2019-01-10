@@ -61,7 +61,7 @@ class DataHandler:
         for i in range(episodes):
             self.runEpisode(doRender=True)
 
-    def runEpisode(self, doRender=False, discountFactor=0.97):
+    def runEpisode(self, doRender=False, discountFactor=0.99):
         inputList, outputList = [], []
         totalReward = 0.0
         observ = self.env.reset()
