@@ -9,7 +9,7 @@ class PolicyLearner:
         self.net = net
         nn.CrossEntropyLoss()
         self.criterion = TargetedMSELoss()
-        self.optimizer = torch.optim.SGD(net.parameters(), lr=1e-3, momentum=0.9, weight_decay=1e-3)
+        self.optimizer = torch.optim.Adam(net.parameters())
         self.confidenceMul = confidenceMul
 
     def setConfidenceMul(self, confidenceMul):

@@ -9,9 +9,10 @@ class Net(nn.Module):
         for i in inputSpace.shape:
             inputN *= i
         outputN = outputSpace.n
-        hidden = 32
+        hidden = 128
         self.linear1 = nn.Linear(inputN, hidden)
-        self.linear2 = nn.Linear(hidden, outputN)
+        self.linear2 = nn.Linear(hidden, hidden)
+        self.linear3 = nn.Linear(hidden, outputN)
         self.mul = mul
 
     def forward(self, x):
@@ -20,4 +21,6 @@ class Net(nn.Module):
         x = self.linear1(x)
         x = F.relu(x)
         x = self.linear2(x)
+        x = F.relu(x)
+        x = self.linear3(x)
         return x
