@@ -43,10 +43,13 @@ class DataHandler:
         avgReward = sumReward / episodes
         return avgReward
 
-    def train(self, batchSize):
-        inputs = torch.from_numpy(np.asarray(self.inputs, dtype=np.float32))
-        labels = torch.from_numpy(np.asarray(self.labels, dtype=np.int64))
-        rewards = np.asarray(self.rewards, dtype=np.float32)
+    def train(self, batchSize, useFraction=1):
+        assert 0 < useFraction and useFraction <= 1
+
+        inputs, labels, rewards = self.getFractionOfData(useFraction)
+        inputs = torch.from_numpy(np.asarray(inputs, dtype=np.float32))
+        labels = torch.from_numpy(np.asarray(labels, dtype=np.int64))
+        rewards = np.asarray(rewards, dtype=np.float32)
         rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-6)
         rewards = torch.from_numpy(rewards)
 
@@ -57,11 +60,25 @@ class DataHandler:
             inputSamples, labelSamples, rewardSamples = data
             self.policy.learn(inputSamples, labelSamples, rewardSamples)
 
+    def getFractionOfData(self, useFraction):
+        totalSamples = len(self.inputs)
+        extractedSamples = int(useFraction * totalSamples)
+        indices = list(range(totalSamples))
+        random.shuffle(indices)
+        indices = indices[:extractedSamples]
+
+        inputs, labels, rewards = [], [], []
+        for i in indices:
+            inputs.append(self.inputs[i])
+            labels.append(self.labels[i])
+            rewards.append(self.rewards[i])
+        return inputs, labels, rewards
+
     def render(self, episodes=1):
         for i in range(episodes):
             self.runEpisode(doRender=True)
 
-    def runEpisode(self, doRender=False, discountFactor=0.97):
+    def runEpisode(self, doRender=False, discountFactor=0.99):
         inputList, outputList = [], []
         totalReward = 0.0
         observ = self.env.reset()
